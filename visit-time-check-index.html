@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拜访不在正常时间段查询系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+
+        .section-title {
+            font-size: 20px;
+            color: #374151;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .upload-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .upload-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+        }
+
+        .upload-card h3 {
+            font-size: 16px;
+            color: #374151;
+            margin-bottom: 12px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .upload-area:hover {
+            background: #f3f4f6;
+            border-color: #5568d3;
+        }
+
+        .upload-area.dragover {
+            background: #eef2ff;
+            border-color: #4f46e5;
+        }
+
+        .upload-area input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .upload-text {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f3f4f6;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+        }
+
+        th {
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+            position: sticky;
+            top: 0;
+            background: #f3f4f6;
+            z-index: 1;
+        }
+
+        td {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .status-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+
+        .status-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #3b82f6;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .instructions {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .instructions h4 {
+            color: #1e40af;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .instructions ul {
+            margin-left: 20px;
+            color: #1e3a8a;
+            line-height: 1.8;
+        }
+
+        .instructions li {
+            margin-bottom: 5px;
+        }
+
+        .filter-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filter-item label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #4b5563;
+            font-weight: 500;
+        }
+
+        .filter-item input,
+        .filter-item select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .filter-item input:focus,
+        .filter-item select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+        }
+
+        .filter-section-label {
+            grid-column: 1 / -1;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            padding: 8px 12px;
+            background: #eef2ff;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .pagination-info {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .pagination-info strong {
+            color: #374151;
+            font-weight: 600;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .page-btn {
+            padding: 8px 16px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            transition: all 0.3s;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-numbers {
+            display: flex;
+            gap: 5px;
+        }
+
+        .page-number {
+            min-width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e5e7eb;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            transition: all 0.3s;
+        }
+
+        .page-number:hover {
+            background: #f3f4f6;
+            border-color: #667eea;
+        }
+
+        .page-number.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .page-ellipsis {
+            min-width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            font-size: 14px;
+        }
+
+        .page-size-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .page-size-selector label {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .page-size-selector select {
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            background: white;
+            color: #374151;
+        }
+
+        .page-size-selector select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* ============ 大区统计样式 ============ */
+        .region-summary {
+            margin-top: 25px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+
+        .region-summary-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .region-summary-desc {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .region-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .region-card {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8ecff 100%);
+            border-radius: 10px;
+            padding: 18px;
+            border: 2px solid #c7d2fe;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+        }
+
+        .region-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.25);
+            border-color: #818cf8;
+        }
+
+        .region-card.active {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.35);
+            border-color: #4f46e5;
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+        }
+
+        .region-card-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #4338ca;
+            margin-bottom: 8px;
+            word-break: break-all;
+        }
+
+        .region-card-count {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ef4444;
+            line-height: 1;
+        }
+
+        .region-card-unit {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .region-card-hint {
+            font-size: 12px;
+            color: #818cf8;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        .region-card.active .region-card-hint {
+            color: #4338ca;
+        }
+
+        .region-card.unknown {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-color: #fbbf24;
+        }
+
+        .region-card.unknown:hover {
+            border-color: #f59e0b;
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.25);
+        }
+
+        .region-card.unknown.active {
+            border-color: #d97706;
+            box-shadow: 0 6px 20px rgba(217, 119, 6, 0.35);
+            background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
+        }
+
+        .region-card.unknown .region-card-name {
+            color: #92400e;
+        }
+
+        .region-card.unknown .region-card-hint {
+            color: #b45309;
+        }
+
+        /* ============ 片区展开面板样式 ============ */
+        .area-detail-panel {
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.4s ease, opacity 0.3s ease, margin 0.3s ease, padding 0.3s ease;
+            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+            border-radius: 12px;
+            border: 2px solid #c4b5fd;
+            margin-bottom: 0;
+            padding: 0 20px;
+        }
+
+        .area-detail-panel.open {
+            max-height: 2000px;
+            opacity: 1;
+            margin-bottom: 15px;
+            padding: 20px;
+        }
+
+        .area-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .area-detail-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #5b21b6;
+        }
+
+        .area-detail-title span {
+            color: #7c3aed;
+            font-weight: 700;
+        }
+
+        .area-detail-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid #c4b5fd;
+            background: white;
+            color: #7c3aed;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            line-height: 1;
+        }
+
+        .area-detail-close:hover {
+            background: #7c3aed;
+            color: white;
+            border-color: #7c3aed;
+        }
+
+        .area-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .area-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid #ddd6fe;
+            transition: all 0.2s;
+        }
+
+        .area-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
+            border-color: #a78bfa;
+        }
+
+        .area-card-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #6d28d9;
+            margin-bottom: 6px;
+            word-break: break-all;
+        }
+
+        .area-card-count {
+            font-size: 22px;
+            font-weight: 700;
+            color: #ef4444;
+            line-height: 1;
+        }
+
+        .area-card-unit {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 3px;
+        }
+
+        .area-card-percent {
+            font-size: 12px;
+            color: #7c3aed;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .area-detail-table-wrap {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid #ddd6fe;
+            background: white;
+        }
+
+        .area-detail-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .area-detail-table th,
+        .area-detail-table td {
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid #ede9fe;
+            font-size: 13px;
+        }
+
+        .area-detail-table th {
+            background: #f5f3ff;
+            font-weight: 600;
+            color: #5b21b6;
+        }
+
+        .area-detail-table td {
+            color: #6b7280;
+        }
+
+        .area-detail-table .area-count-cell {
+            font-weight: 700;
+            color: #ef4444;
+            font-size: 15px;
+        }
+
+        .area-detail-table .area-percent-cell {
+            color: #7c3aed;
+            font-weight: 600;
+        }
+
+        .area-detail-table tbody tr:hover {
+            background: #faf5ff;
+        }
+
+        .area-detail-total {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+            padding: 10px 14px;
+            background: #ede9fe;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .area-detail-total strong {
+            color: #5b21b6;
+        }
+
+        .area-detail-total span {
+            color: #ef4444;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .region-summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .region-summary-table th,
+        .region-summary-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .region-summary-table th {
+            background: #f3f4f6;
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .region-summary-table td {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .region-summary-table .count-cell {
+            font-weight: 700;
+            color: #ef4444;
+            font-size: 16px;
+        }
+
+        .region-summary-table .percent-cell {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .region-summary-table tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .region-total-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 12px 15px;
+            background: #fef2f2;
+            border-radius: 8px;
+            border: 1px solid #fca5a5;
+        }
+
+        .region-total-bar strong {
+            color: #991b1b;
+            font-size: 15px;
+        }
+
+        .region-total-bar span {
+            color: #ef4444;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        /* 清理区域样式 */
+        .cleanup-section {
+            background: #fef2f2;
+            border: 2px solid #fca5a5;
+        }
+
+        .cleanup-warning {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .cleanup-warning h4 {
+            color: #92400e;
+            margin-bottom: 10px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cleanup-warning p {
+            color: #78350f;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>拜访不在正常时间段查询系统</h1>
+            <p>筛选拜访开始/结束时间不在正常时间段内的异常记录</p>
+        </div>
+
+        <div class="content">
+            <div class="section">
+                <div class="section-title">
+                    <span>Step 1</span> 上传数据表
+                </div>
+
+                <div class="upload-row">
+                    <div class="upload-card">
+                        <h3>拜访明细记录表</h3>
+                        <div class="instructions">
+                            <h4>文件格式要求：</h4>
+                            <ul>
+                                <li>支持 Excel (.xlsx, .xls) 文件</li>
+                                <li>必须包含列：拜访记录编号、拜访开始时间、拜访结束时间、拜访人、客户名称、客户编码、拜访用时</li>
+                            </ul>
+                        </div>
+                        <div class="upload-area" id="visitUploadArea" onclick="document.getElementById('fileInput').click()">
+                            <div class="upload-icon">📋</div>
+                            <p class="upload-text">点击或拖拽上传拜访明细记录表</p>
+                            <p class="upload-hint">支持 .xlsx, .xls 格式</p>
+                            <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFileSelect(event)">
+                        </div>
+                        <div id="uploadStatus"></div>
+                    </div>
+
+                    <div class="upload-card">
+                        <h3>终端门店清单表</h3>
+                        <div class="instructions">
+                            <h4>文件格式要求：</h4>
+                            <ul>
+                                <li>支持 Excel (.xlsx, .xls) 文件</li>
+                                <li>必须包含列：客户编码、所属片区、所属大区</li>
+                                <li>用于补充拜访明细记录表中客户的归属信息</li>
+                            </ul>
+                        </div>
+                        <div class="upload-area" id="terminalUploadArea" onclick="document.getElementById('terminalFileInput').click()">
+                            <div class="upload-icon">🏢</div>
+                            <p class="upload-text">点击或拖拽上传终端门店清单表</p>
+                            <p class="upload-hint">支持 .xlsx, .xls 格式</p>
+                            <input type="file" id="terminalFileInput" accept=".xlsx,.xls" onchange="handleTerminalFileSelect(event)">
+                        </div>
+                        <div id="terminalUploadStatus"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <span>Step 2</span> 查询结果
+                </div>
+
+                <div class="filter-form">
+                    <div class="filter-section-label">正常时间段设置（拜访开始时间或结束时间不在此时间段内的记录将被筛选出来）</div>
+                    <div class="filter-item">
+                        <label for="normalStartTime">正常时间段 - 开始</label>
+                        <input type="time" id="normalStartTime" value="07:00">
+                    </div>
+                    <div class="filter-item">
+                        <label for="normalEndTime">正常时间段 - 结束</label>
+                        <input type="time" id="normalEndTime" value="21:30">
+                    </div>
+                    <div class="filter-section-label">其他筛选条件</div>
+                    <div class="filter-item">
+                        <label for="visitor">拜访人</label>
+                        <input type="text" id="visitor">
+                    </div>
+                    <div class="filter-item">
+                        <label for="customerName">客户名称</label>
+                        <input type="text" id="customerName">
+                    </div>
+                    <div class="filter-item">
+                        <label for="customerCode">客户编码</label>
+                        <input type="text" id="customerCode">
+                    </div>
+                    <div class="filter-item">
+                        <label for="area">所属片区</label>
+                        <input type="text" id="area">
+                    </div>
+                    <div class="filter-item">
+                        <label for="region">所属大区</label>
+                        <input type="text" id="region">
+                    </div>
+                    <div class="filter-item">
+                        <label for="startDate">开始日期 >=</label>
+                        <input type="date" id="startDate">
+                    </div>
+                    <div class="filter-item">
+                        <label for="endDate">结束日期 <=</label>
+                        <input type="date" id="endDate">
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="queryRecords()">
+                        执行查询
+                    </button>
+                    <button class="btn btn-success" onclick="exportToExcel()" id="exportBtn" style="display: none;">
+                        导出为 Excel
+                    </button>
+                </div>
+
+                <div id="queryStatus"></div>
+
+                <div id="regionSummaryContainer"></div>
+
+                <div id="resultContainer"></div>
+
+                <div id="paginationContainer" style="display: none;"></div>
+            </div>
+
+            <div class="section cleanup-section">
+                <div class="section-title">
+                    <span>Step 3</span> 清理数据库
+                </div>
+
+                <div class="cleanup-warning">
+                    <h4>⚠️ 警告</h4>
+                    <p><strong>此操作将永久删除当前数据库及其中的所有表和数据！</strong></p>
+                    <p>删除后无法恢复，请谨慎操作！</p>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-danger" onclick="cleanupDatabase()">
+                        🗑️ 删除数据库
+                    </button>
+                </div>
+
+                <div id="cleanupStatus"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        const API_URL = 'http://localhost:8012/api/audit_visit/visit_time_check';
+        let currentData = [];
+        let currentPage = 1;
+        let pageSize = 1000;
+        let totalPages = 0;
+
+        // 大区 -> 片区统计的缓存数据
+        let regionAreaMap = {};
+        // 当前展开的大区名称（null 表示全部收起）
+        let expandedRegion = null;
+
+        // ============ 获取当前筛选条件描述 ============
+        function getFilterDesc() {
+            var ns = document.getElementById('normalStartTime').value || '07:00';
+            var ne = document.getElementById('normalEndTime').value || '21:30';
+            return '拜访开始时间或结束时间不在 ' + ns + ' ~ ' + ne + ' 时间段内';
+        }
+
+        // ============ Visit 文件上传 ============
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.innerHTML = '<div class="status-message status-info">正在读取文件...</div>';
+
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+                    if (jsonData.length === 0) {
+                        statusDiv.innerHTML = '<div class="status-message status-error">文件为空，请检查文件内容</div>';
+                        return;
+                    }
+
+                    statusDiv.innerHTML = '<div class="status-message status-success">文件读取成功，共 ' + jsonData.length + ' 条记录，正在上传...</div>';
+                    uploadVisitInBatches(jsonData);
+                } catch (error) {
+                    statusDiv.innerHTML = '<div class="status-message status-error">文件解析失败: ' + error.message + '</div>';
+                }
+            };
+
+            reader.onerror = function() {
+                statusDiv.innerHTML = '<div class="status-message status-error">文件读取失败</div>';
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        async function uploadVisitInBatches(records) {
+            const statusDiv = document.getElementById('uploadStatus');
+            const BATCH_SIZE = 5000;
+            const totalBatches = Math.ceil(records.length / BATCH_SIZE);
+            let totalInserted = 0;
+
+            try {
+                for (let i = 0; i < totalBatches; i++) {
+                    const batch = records.slice(i * BATCH_SIZE, (i + 1) * BATCH_SIZE);
+                    statusDiv.innerHTML = '<div class="status-message status-info">正在上传第 ' + (i + 1) + '/' + totalBatches + ' 批（每批 ' + BATCH_SIZE + ' 条）...</div>';
+
+                    const response = await fetch(API_URL + '/uploadVisit', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ records: batch })
+                    });
+
+                    const result = await response.json();
+                    if (!result.success) {
+                        statusDiv.innerHTML = '<div class="status-message status-error">第 ' + (i + 1) + ' 批上传失败: ' + result.error + '</div>';
+                        return;
+                    }
+                    totalInserted += batch.length;
+                }
+
+                statusDiv.innerHTML = '<div class="status-message status-success">全部上传成功！共导入 ' + totalInserted + ' 条记录。</div>';
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="status-message status-error">上传失败: ' + error.message + '<br>请确保后端服务正在运行</div>';
+            }
+        }
+
+        // ============ Terminal 文件上传 ============
+        function handleTerminalFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const statusDiv = document.getElementById('terminalUploadStatus');
+            statusDiv.innerHTML = '<div class="status-message status-info">正在读取文件...</div>';
+
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+                    if (jsonData.length === 0) {
+                        statusDiv.innerHTML = '<div class="status-message status-error">文件为空</div>';
+                        return;
+                    }
+
+                    statusDiv.innerHTML = '<div class="status-message status-success">文件读取成功，共 ' + jsonData.length + ' 条记录，正在上传...</div>';
+                    uploadTerminalInBatches(jsonData);
+                } catch (error) {
+                    statusDiv.innerHTML = '<div class="status-message status-error">文件解析失败: ' + error.message + '</div>';
+                }
+            };
+
+            reader.onerror = function() {
+                statusDiv.innerHTML = '<div class="status-message status-error">文件读取失败</div>';
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        async function uploadTerminalInBatches(records) {
+            const statusDiv = document.getElementById('terminalUploadStatus');
+            const BATCH_SIZE = 5000;
+            const totalBatches = Math.ceil(records.length / BATCH_SIZE);
+            let totalInserted = 0;
+
+            try {
+                for (let i = 0; i < totalBatches; i++) {
+                    const batch = records.slice(i * BATCH_SIZE, (i + 1) * BATCH_SIZE);
+                    statusDiv.innerHTML = '<div class="status-message status-info">正在上传第 ' + (i + 1) + '/' + totalBatches + ' 批...</div>';
+
+                    const response = await fetch(API_URL + '/uploadTerminal', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ records: batch })
+                    });
+
+                    const result = await response.json();
+                    if (!result.success) {
+                        statusDiv.innerHTML = '<div class="status-message status-error">第 ' + (i + 1) + ' 批上传失败: ' + result.error + '</div>';
+                        return;
+                    }
+                    totalInserted += batch.length;
+                }
+
+                statusDiv.innerHTML = '<div class="status-message status-success">全部上传成功！共导入 ' + totalInserted + ' 条记录。</div>';
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="status-message status-error">上传失败: ' + error.message + '</div>';
+            }
+        }
+
+        // ============ 查询 ============
+        async function queryRecords() {
+            const normalStartTime = document.getElementById('normalStartTime').value || '07:00';
+            const normalEndTime = document.getElementById('normalEndTime').value || '21:30';
+            const visitor = document.getElementById('visitor').value.trim();
+            const customerName = document.getElementById('customerName').value.trim();
+            const customerCode = document.getElementById('customerCode').value.trim();
+            const area = document.getElementById('area').value.trim();
+            const region = document.getElementById('region').value.trim();
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            const params = new URLSearchParams({
+                normalStartTime: normalStartTime + ':00',
+                normalEndTime: normalEndTime + ':00',
+                visitor,
+                customerName,
+                customerCode,
+                area,
+                region,
+                startDate,
+                endDate
+            });
+
+            const statusDiv = document.getElementById('queryStatus');
+            const resultDiv = document.getElementById('resultContainer');
+            const paginationDiv = document.getElementById('paginationContainer');
+            const regionSummaryDiv = document.getElementById('regionSummaryContainer');
+
+            statusDiv.innerHTML = '<div class="status-message status-info">正在查询不在正常时间段内的异常记录（Visit LEFT JOIN Terminal）...</div>';
+            resultDiv.innerHTML = '';
+            paginationDiv.style.display = 'none';
+            regionSummaryDiv.innerHTML = '';
+            document.getElementById('exportBtn').style.display = 'none';
+
+            expandedRegion = null;
+            regionAreaMap = {};
+
+            try {
+                const response = await fetch(API_URL + '/getAbnormalTime?' + params.toString());
+                const result = await response.json();
+
+                if (result.success) {
+                    currentData = result.data;
+                    currentPage = 1;
+
+                    if (currentData.length === 0) {
+                        statusDiv.innerHTML = '<div class="status-message status-info">未找到符合条件的记录</div>';
+                        resultDiv.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><h3>暂无符合条件的记录</h3><p>请尝试调整查询条件</p></div>';
+                    } else {
+                        totalPages = Math.ceil(currentData.length / pageSize);
+                        statusDiv.innerHTML = '<div class="status-message status-success">查询成功！找到 ' + currentData.length + ' 条异常时间记录，共 ' + totalPages + ' 页</div>';
+                        buildRegionAreaMap();
+                        renderRegionSummary();
+                        displayResults();
+                        renderPagination();
+                        document.getElementById('exportBtn').style.display = 'inline-flex';
+                        paginationDiv.style.display = 'block';
+                    }
+                } else {
+                    statusDiv.innerHTML = '<div class="status-message status-error">查询失败: ' + result.error + '</div>';
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="status-message status-error">查询失败: ' + error.message + '<br>请确保后端服务正在运行</div>';
+            }
+        }
+
+        // ============ 清理数据库逻辑 ============
+        async function cleanupDatabase() {
+            if (!confirm('⚠️ 警告：此操作将永久删除当前数据库及其中的所有数据！\n\n确定要继续吗？')) {
+                return;
+            }
+
+            const statusDiv = document.getElementById('cleanupStatus');
+            statusDiv.innerHTML = '<div class="status-message status-info">正在删除数据库...</div>';
+
+            try {
+                const response = await fetch(API_URL + '/cleanup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    statusDiv.innerHTML = '<div class="status-message status-success">✅ 数据库已成功删除并重置！您可以重新上传数据了。</div>';
+                    
+                    // 清空页面数据
+                    currentData = [];
+                    document.getElementById('uploadStatus').innerHTML = '';
+                    document.getElementById('terminalUploadStatus').innerHTML = '';
+                    document.getElementById('queryStatus').innerHTML = '';
+                    document.getElementById('resultContainer').innerHTML = '';
+                    document.getElementById('regionSummaryContainer').innerHTML = '';
+                    document.getElementById('paginationContainer').style.display = 'none';
+                    document.getElementById('exportBtn').style.display = 'none';
+                    
+                    // 清空文件选择
+                    document.getElementById('fileInput').value = '';
+                    document.getElementById('terminalFileInput').value = '';
+                } else {
+                    statusDiv.innerHTML = '<div class="status-message status-error">删除失败: ' + result.error + '</div>';
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="status-message status-error">删除失败: ' + error.message + '</div>';
+            }
+        }
+
+        // ============ 构建大区->片区映射 ============
+        function buildRegionAreaMap() {
+            regionAreaMap = {};
+            currentData.forEach(function(row) {
+                var regionName = row.所属大区 || '未知大区';
+                var areaName = row.所属片区 || '未知片区';
+                if (!regionAreaMap[regionName]) {
+                    regionAreaMap[regionName] = {};
+                }
+                if (!regionAreaMap[regionName][areaName]) {
+                    regionAreaMap[regionName][areaName] = 0;
+                }
+                regionAreaMap[regionName][areaName]++;
+            });
+        }
+
+        // ============ 大区异常统计 ============
+        function renderRegionSummary() {
+            var regionSummaryDiv = document.getElementById('regionSummaryContainer');
+            var regionCountMap = {};
+            var totalCount = currentData.length;
+
+            currentData.forEach(function(row) {
+                var regionName = row.所属大区 || '未知大区';
+                if (!regionCountMap[regionName]) { regionCountMap[regionName] = 0; }
+                regionCountMap[regionName]++;
+            });
+
+            var regionList = [];
+            for (var key in regionCountMap) {
+                if (regionCountMap.hasOwnProperty(key)) {
+                    regionList.push({ name: key, count: regionCountMap[key] });
+                }
+            }
+            regionList.sort(function(a, b) { return b.count - a.count; });
+
+            var html = '<div class="region-summary">';
+            html += '<div class="region-summary-title">各大区异常情况统计</div>';
+            html += '<div class="region-summary-desc">';
+            html += '以下统计基于当前查询条件筛选出的结果，展示每个大区在该查询条件下的异常拜访记录数量。';
+            html += '异常标准：' + getFilterDesc() + '。';
+            html += '<br><strong>点击大区卡片可查看该大区下各片区的异常情况明细。</strong>';
+            html += '</div>';
+
+            html += '<div class="region-cards">';
+            regionList.forEach(function(item) {
+                var isUnknown = (item.name === '未知大区');
+                var isActive = (expandedRegion === item.name);
+                var escapedName = item.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                html += '<div class="region-card' + (isUnknown ? ' unknown' : '') + (isActive ? ' active' : '') + '" onclick="toggleRegionDetail(\'' + escapedName + '\')" title="点击查看片区明细">';
+                html += '<div class="region-card-name">' + item.name + '</div>';
+                html += '<div class="region-card-count">' + item.count + '</div>';
+                html += '<div class="region-card-unit">条异常记录</div>';
+                html += '<div class="region-card-hint">' + (isActive ? '&#9650; 点击收起片区明细' : '&#9660; 点击展开片区明细') + '</div>';
+                html += '</div>';
+            });
+            html += '</div>';
+
+            html += '<div class="area-detail-panel' + (expandedRegion ? ' open' : '') + '" id="areaDetailPanel">';
+            html += '<div id="areaDetailContent"></div>';
+            html += '</div>';
+
+            html += '<div class="region-total-bar">';
+            html += '<strong>异常记录总计：</strong>';
+            html += '<span>' + totalCount + '</span>';
+            html += '<strong style="margin-left: 5px;">条</strong>';
+            html += '<span style="color: #6b7280; font-size: 14px; font-weight: normal; margin-left: 15px;">（覆盖 ' + regionList.length + ' 个大区）</span>';
+            html += '</div>';
+
+            html += '<div class="table-container" style="margin-top: 15px;">';
+            html += '<table class="region-summary-table">';
+            html += '<thead><tr><th>序号</th><th>所属大区</th><th>异常记录数</th><th>占比</th></tr></thead>';
+            html += '<tbody>';
+            regionList.forEach(function(item, index) {
+                var percent = totalCount > 0 ? ((item.count / totalCount) * 100).toFixed(2) : '0.00';
+                html += '<tr><td>' + (index + 1) + '</td><td>' + item.name + '</td><td class="count-cell">' + item.count + '</td><td class="percent-cell">' + percent + '%</td></tr>';
+            });
+            html += '</tbody></table></div>';
+            html += '</div>';
+
+            regionSummaryDiv.innerHTML = html;
+            if (expandedRegion) { renderAreaDetail(expandedRegion); }
+        }
+
+        // ============ 切换大区片区展开 ============
+        function toggleRegionDetail(regionName) {
+            if (expandedRegion === regionName) {
+                expandedRegion = null;
+                var panel = document.getElementById('areaDetailPanel');
+                if (panel) { panel.classList.remove('open'); }
+                updateCardStates();
+            } else {
+                expandedRegion = regionName;
+                renderAreaDetail(regionName);
+                var panel = document.getElementById('areaDetailPanel');
+                if (panel) { panel.classList.add('open'); }
+                updateCardStates();
+                setTimeout(function() {
+                    var panelEl = document.getElementById('areaDetailPanel');
+                    if (panelEl) { panelEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+                }, 100);
+            }
+        }
+
+        function updateCardStates() {
+            var cards = document.querySelectorAll('.region-card');
+            cards.forEach(function(card) {
+                var nameEl = card.querySelector('.region-card-name');
+                var hintEl = card.querySelector('.region-card-hint');
+                if (!nameEl || !hintEl) return;
+                var cardName = nameEl.textContent;
+                if (cardName === expandedRegion) {
+                    card.classList.add('active');
+                    hintEl.innerHTML = '&#9650; 点击收起片区明细';
+                } else {
+                    card.classList.remove('active');
+                    hintEl.innerHTML = '&#9660; 点击展开片区明细';
+                }
+            });
+        }
+
+        // ============ 渲染片区明细 ============
+        function renderAreaDetail(regionName) {
+            var contentDiv = document.getElementById('areaDetailContent');
+            if (!contentDiv) return;
+            var areaMap = regionAreaMap[regionName];
+            if (!areaMap) { contentDiv.innerHTML = '<p style="color: #6b7280;">该大区下无片区数据。</p>'; return; }
+
+            var areaList = [];
+            var regionTotal = 0;
+            for (var key in areaMap) {
+                if (areaMap.hasOwnProperty(key)) { areaList.push({ name: key, count: areaMap[key] }); regionTotal += areaMap[key]; }
+            }
+            areaList.sort(function(a, b) { return b.count - a.count; });
+
+            var html = '<div class="area-detail-header">';
+            html += '<div class="area-detail-title"><span>' + regionName + '</span> - 各片区异常情况明细（共 ' + areaList.length + ' 个片区）</div>';
+            html += '<button class="area-detail-close" onclick="toggleRegionDetail(\'' + regionName.replace(/'/g, "\\'") + '\')" title="收起">&times;</button>';
+            html += '</div>';
+
+            html += '<div class="area-cards">';
+            areaList.forEach(function(item) {
+                var percent = regionTotal > 0 ? ((item.count / regionTotal) * 100).toFixed(1) : '0.0';
+                html += '<div class="area-card"><div class="area-card-name">' + item.name + '</div><div class="area-card-count">' + item.count + '</div><div class="area-card-unit">条异常记录</div><div class="area-card-percent">占本大区 ' + percent + '%</div></div>';
+            });
+            html += '</div>';
+
+            html += '<div class="area-detail-table-wrap"><table class="area-detail-table"><thead><tr><th>序号</th><th>所属片区</th><th>异常记录数</th><th>占本大区比例</th></tr></thead><tbody>';
+            areaList.forEach(function(item, index) {
+                var percent = regionTotal > 0 ? ((item.count / regionTotal) * 100).toFixed(2) : '0.00';
+                html += '<tr><td>' + (index + 1) + '</td><td>' + item.name + '</td><td class="area-count-cell">' + item.count + '</td><td class="area-percent-cell">' + percent + '%</td></tr>';
+            });
+            html += '</tbody></table></div>';
+
+            html += '<div class="area-detail-total"><strong>' + regionName + ' 异常合计：</strong><span>' + regionTotal + '</span><strong style="margin-left: 3px;">条</strong><span style="color: #6b7280; font-size: 13px; font-weight: normal; margin-left: 10px;">（含 ' + areaList.length + ' 个片区）</span></div>';
+            contentDiv.innerHTML = html;
+        }
+
+        // ============ 显示结果（分页） ============
+        function displayResults() {
+            const resultDiv = document.getElementById('resultContainer');
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize, currentData.length);
+            const pageData = currentData.slice(startIndex, endIndex);
+
+            let tableHTML = '<div class="table-container"><table><thead><tr>';
+            tableHTML += '<th>序号</th>';
+            tableHTML += '<th>拜访记录编号</th>';
+            tableHTML += '<th>拜访开始时间</th>';
+            tableHTML += '<th>拜访结束时间</th>';
+            tableHTML += '<th>拜访人</th>';
+            tableHTML += '<th>客户名称</th>';
+            tableHTML += '<th>客户编码</th>';
+            tableHTML += '<th>拜访用时</th>';
+            tableHTML += '<th>所属片区</th>';
+            tableHTML += '<th>所属大区</th>';
+            tableHTML += '</tr></thead><tbody>';
+
+            pageData.forEach(function(row, index) {
+                var globalIndex = startIndex + index + 1;
+                tableHTML += '<tr>';
+                tableHTML += '<td><strong>' + globalIndex + '</strong></td>';
+                tableHTML += '<td>' + (row.拜访记录编号 || '-') + '</td>';
+                tableHTML += '<td>' + (row.拜访开始时间 || '-') + '</td>';
+                tableHTML += '<td>' + (row.拜访结束时间 || '-') + '</td>';
+                tableHTML += '<td>' + (row.拜访人 || '-') + '</td>';
+                tableHTML += '<td>' + (row.客户名称 || '-') + '</td>';
+                tableHTML += '<td>' + (row.客户编码 || '-') + '</td>';
+                tableHTML += '<td><span class="badge">' + (row.拜访用时 != null ? row.拜访用时 + ' 分钟' : '-') + '</span></td>';
+                tableHTML += '<td>' + (row.所属片区 || '-') + '</td>';
+                tableHTML += '<td>' + (row.所属大区 || '-') + '</td>';
+                tableHTML += '</tr>';
+            });
+
+            tableHTML += '</tbody></table></div>';
+            resultDiv.innerHTML = tableHTML;
+        }
+
+        // ============ 分页 ============
+        function renderPagination() {
+            const paginationDiv = document.getElementById('paginationContainer');
+            const startIndex = (currentPage - 1) * pageSize + 1;
+            const endIndex = Math.min(currentPage * pageSize, currentData.length);
+
+            let html = '<div class="pagination-container">';
+            html += '<div class="pagination-info">显示 <strong>' + startIndex + '</strong> - <strong>' + endIndex + '</strong> 条，共 <strong>' + currentData.length + '</strong> 条记录</div>';
+            html += '<div class="pagination-controls">';
+            html += '<div class="page-size-selector"><label>每页显示：</label><select onchange="changePageSize(this.value)">';
+            [100, 500, 1000, 2000].forEach(function(size) {
+                html += '<option value="' + size + '"' + (pageSize === size ? ' selected' : '') + '>' + size + '</option>';
+            });
+            html += '</select></div>';
+            html += '<button class="page-btn" onclick="goToPage(1)"' + (currentPage === 1 ? ' disabled' : '') + '>首页</button>';
+            html += '<button class="page-btn" onclick="goToPage(' + (currentPage - 1) + ')"' + (currentPage === 1 ? ' disabled' : '') + '>上一页</button>';
+            html += '<div class="page-numbers">' + generatePageNumbers() + '</div>';
+            html += '<button class="page-btn" onclick="goToPage(' + (currentPage + 1) + ')"' + (currentPage === totalPages ? ' disabled' : '') + '>下一页</button>';
+            html += '<button class="page-btn" onclick="goToPage(' + totalPages + ')"' + (currentPage === totalPages ? ' disabled' : '') + '>末页</button>';
+            html += '</div></div>';
+            paginationDiv.innerHTML = html;
+        }
+
+        function generatePageNumbers() {
+            let html = '';
+            const maxVisible = 7;
+            if (totalPages <= maxVisible) {
+                for (let i = 1; i <= totalPages; i++) {
+                    html += '<div class="page-number' + (i === currentPage ? ' active' : '') + '" onclick="goToPage(' + i + ')">' + i + '</div>';
+                }
+            } else {
+                if (currentPage <= 4) {
+                    for (let i = 1; i <= 5; i++) { html += '<div class="page-number' + (i === currentPage ? ' active' : '') + '" onclick="goToPage(' + i + ')">' + i + '</div>'; }
+                    html += '<div class="page-ellipsis">...</div>';
+                    html += '<div class="page-number" onclick="goToPage(' + totalPages + ')">' + totalPages + '</div>';
+                } else if (currentPage >= totalPages - 3) {
+                    html += '<div class="page-number" onclick="goToPage(1)">1</div><div class="page-ellipsis">...</div>';
+                    for (let i = totalPages - 4; i <= totalPages; i++) { html += '<div class="page-number' + (i === currentPage ? ' active' : '') + '" onclick="goToPage(' + i + ')">' + i + '</div>'; }
+                } else {
+                    html += '<div class="page-number" onclick="goToPage(1)">1</div><div class="page-ellipsis">...</div>';
+                    for (let i = currentPage - 1; i <= currentPage + 1; i++) { html += '<div class="page-number' + (i === currentPage ? ' active' : '') + '" onclick="goToPage(' + i + ')">' + i + '</div>'; }
+                    html += '<div class="page-ellipsis">...</div>';
+                    html += '<div class="page-number" onclick="goToPage(' + totalPages + ')">' + totalPages + '</div>';
+                }
+            }
+            return html;
+        }
+
+        function goToPage(page) {
+            if (page < 1 || page > totalPages || page === currentPage) return;
+            currentPage = page;
+            displayResults();
+            renderPagination();
+            document.getElementById('resultContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function changePageSize(newSize) {
+            pageSize = parseInt(newSize);
+            totalPages = Math.ceil(currentData.length / pageSize);
+            currentPage = 1;
+            displayResults();
+            renderPagination();
+        }
+
+        // ============ 导出 Excel ============
+        function exportToExcel() {
+            if (currentData.length === 0) { alert('没有数据可以导出'); return; }
+
+            var exportData = currentData.map(function(row, index) {
+                return {
+                    '序号': index + 1,
+                    '拜访记录编号': row.拜访记录编号 || '-',
+                    '拜访开始时间': row.拜访开始时间 || '-',
+                    '拜访结束时间': row.拜访结束时间 || '-',
+                    '拜访人': row.拜访人 || '-',
+                    '客户名称': row.客户名称 || '-',
+                    '客户编码': row.客户编码 || '-',
+                    '拜访用时（分钟）': row.拜访用时 != null ? row.拜访用时 : '-',
+                    '所属片区': row.所属片区 || '-',
+                    '所属大区': row.所属大区 || '-'
+                };
+            });
+
+            var regionCountMap = {};
+            currentData.forEach(function(row) {
+                var regionName = row.所属大区 || '未知大区';
+                if (!regionCountMap[regionName]) { regionCountMap[regionName] = 0; }
+                regionCountMap[regionName]++;
+            });
+            var regionList = [];
+            for (var key in regionCountMap) { if (regionCountMap.hasOwnProperty(key)) { regionList.push({ name: key, count: regionCountMap[key] }); } }
+            regionList.sort(function(a, b) { return b.count - a.count; });
+
+            var regionExportData = regionList.map(function(item, index) {
+                var percent = currentData.length > 0 ? ((item.count / currentData.length) * 100).toFixed(2) + '%' : '0.00%';
+                return { '序号': index + 1, '所属大区': item.name, '异常记录数': item.count, '占比': percent };
+            });
+            regionExportData.push({ '序号': '', '所属大区': '合计', '异常记录数': currentData.length, '占比': '100.00%' });
+
+            var areaDetailExportData = [];
+            var seq = 1;
+            regionList.forEach(function(regionItem) {
+                var areaMap = regionAreaMap[regionItem.name];
+                if (!areaMap) return;
+                var areaList = [];
+                for (var aKey in areaMap) { if (areaMap.hasOwnProperty(aKey)) { areaList.push({ name: aKey, count: areaMap[aKey] }); } }
+                areaList.sort(function(a, b) { return b.count - a.count; });
+                areaList.forEach(function(areaItem) {
+                    var percentInRegion = regionItem.count > 0 ? ((areaItem.count / regionItem.count) * 100).toFixed(2) + '%' : '0.00%';
+                    var percentInTotal = currentData.length > 0 ? ((areaItem.count / currentData.length) * 100).toFixed(2) + '%' : '0.00%';
+                    areaDetailExportData.push({ '序号': seq++, '所属大区': regionItem.name, '所属片区': areaItem.name, '异常记录数': areaItem.count, '占本大区比例': percentInRegion, '占总体比例': percentInTotal });
+                });
+            });
+
+            var wb = XLSX.utils.book_new();
+
+            var ws = XLSX.utils.json_to_sheet(exportData);
+            ws['!cols'] = [{ wch: 8 },{ wch: 20 },{ wch: 20 },{ wch: 20 },{ wch: 15 },{ wch: 25 },{ wch: 20 },{ wch: 15 },{ wch: 15 },{ wch: 15 }];
+            XLSX.utils.book_append_sheet(wb, ws, '合并查询结果');
+
+            var ws2 = XLSX.utils.json_to_sheet(regionExportData);
+            ws2['!cols'] = [{ wch: 8 },{ wch: 20 },{ wch: 15 },{ wch: 10 }];
+            XLSX.utils.book_append_sheet(wb, ws2, '大区异常统计');
+
+            var ws3 = XLSX.utils.json_to_sheet(areaDetailExportData);
+            ws3['!cols'] = [{ wch: 8 },{ wch: 20 },{ wch: 20 },{ wch: 15 },{ wch: 15 },{ wch: 12 }];
+            XLSX.utils.book_append_sheet(wb, ws3, '大区-片区明细统计');
+
+            var date = new Date().toISOString().split('T')[0];
+            var filename = 'Visit_Terminal_异常时间查询_' + date + '.xlsx';
+            XLSX.writeFile(wb, filename);
+            alert('导出成功！文件名：' + filename + '，共导出 ' + currentData.length + ' 条记录（含大区统计、大区-片区明细统计Sheet）');
+        }
+
+        // ============ 拖拽上传支持 ============
+        function setupDragDrop(areaId, fileInputId, handler) {
+            var area = document.getElementById(areaId);
+            area.addEventListener('dragover', function(e) { e.preventDefault(); area.classList.add('dragover'); });
+            area.addEventListener('dragleave', function(e) { e.preventDefault(); area.classList.remove('dragover'); });
+            area.addEventListener('drop', function(e) {
+                e.preventDefault();
+                area.classList.remove('dragover');
+                var files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    var fileInput = document.getElementById(fileInputId);
+                    fileInput.files = files;
+                    handler({ target: fileInput });
+                }
+            });
+        }
+
+        setupDragDrop('visitUploadArea', 'fileInput', handleFileSelect);
+        setupDragDrop('terminalUploadArea', 'terminalFileInput', handleTerminalFileSelect);
+    </script>
+</body>
+</html>
